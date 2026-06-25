@@ -106,7 +106,7 @@ Open **two separate terminal windows**:
 
 **Terminal 1 — Mock API server** *(port 8000)*
 ```bash
-node mock-server.js
+node mock-server.js # Or: npm run mock-server
 ```
 
 Expected output:
@@ -134,13 +134,14 @@ Visit **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ## API Reference
 
-The mock server exposes three endpoints:
+The mock server exposes four endpoints:
 
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/tools/status` | Returns `{ "status": "online" }` |
 | `POST` | `/tools/add-task` | Accepts `{ title, description }` · Returns `201` with the created task |
 | `GET` | `/tools/list-tasks` | Returns array of all tasks |
+| `DELETE` | `/tools/delete-task/:id` | Deletes a task by ID · Returns `200` with the deleted task |
 
 > **Note:** Tasks are stored in-memory. Restarting the mock server clears all tasks.
 
