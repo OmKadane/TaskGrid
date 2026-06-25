@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { addTask as addTaskRequest, listTasks } from "../services/api";
+import { addTask as addTaskRequest, deleteTask as deleteTaskRequest, listTasks } from "../services/api";
 
 export function useTasks() {
   const [tasks, setTasks] = useState([]);
@@ -50,6 +50,24 @@ export function useTasks() {
     [fetchTasks],
   );
 
+  const deleteTask = useCallback(
+    async (id) => {
+      try {
+        await deleteTaskRequest(id);
+        await fetchTasks();
+        return true;
+      } catch (err) {
+        const message =
+          err.response?.data?.error ||
+          err.message ||
+          "Failed to delete task.";
+        setError(message);
+        return false;
+      }
+    },
+    [fetchTasks],
+  );
+
   return {
     tasks,
     loading,
@@ -57,5 +75,6 @@ export function useTasks() {
     error,
     fetchTasks,
     addTask,
+    deleteTask,
   };
 }

@@ -4,6 +4,7 @@ export default function ConnectionBadge() {
   const { serverStatus } = useTaskGrid();
   const { loading, isOnline, status, error } = serverStatus;
 
+
   if (loading) {
     return (
       <div

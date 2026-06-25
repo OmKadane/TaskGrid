@@ -3,7 +3,7 @@ import { getServerStatus } from "../services/api";
 
 export function useServerStatus() {
   const [status, setStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // true = show "Checking…" from first paint
   const [error, setError] = useState(null);
 
   const checkStatus = useCallback(async () => {

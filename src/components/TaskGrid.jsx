@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTaskGrid } from "../context/TaskGridContext";
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -331,18 +331,59 @@ function SortToggle({ value, onChange }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function TaskGrid() {
   const { tasks: taskState } = useTaskGrid();
-  const { tasks, loading, error, fetchTasks, submitting } = taskState;
+  const { tasks, loading, error, fetchTasks, submitting, deleteTask } = taskState;
+
+  // Tracks whether the initial fetch has completed — guards scrub effects
+  const initialFetchDone = useRef(false);
 
   // Local UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
-  const [completedIds, setCompletedIds] = useState(new Set());
+  const [completedIds, setCompletedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem("taskgrid-completed");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  // deletedIds is intentionally NOT persisted — mock server resets IDs on restart,
+  // which would cause recycled IDs to be silently filtered out.
   const [deletedIds, setDeletedIds] = useState(new Set());
 
-  // Fetch on mount
+  // Sync only completedIds to localStorage
   useEffect(() => {
-    fetchTasks();
+    localStorage.setItem("taskgrid-completed", JSON.stringify([...completedIds]));
+  }, [completedIds]);
+
+  // Clear any stale deleted-ids that may linger from a previous session
+  useEffect(() => {
+    localStorage.removeItem("taskgrid-deleted");
+  }, []);
+
+  // Fetch on mount — then scrub stale completedIds against real server task IDs
+  useEffect(() => {
+    fetchTasks().then((fetchedTasks) => {
+      if (!Array.isArray(fetchedTasks)) return; // fetch failed — don't scrub or mark done
+      initialFetchDone.current = true; // only mark done on successful fetch
+      const serverIds = new Set(fetchedTasks.map((t) => t.id));
+      setCompletedIds((prev) => {
+        const cleaned = new Set([...prev].filter((id) => serverIds.has(id)));
+        return cleaned.size === prev.size ? prev : cleaned;
+      });
+    });
   }, [fetchTasks]);
+
+  // Scrub on subsequent task list updates (e.g. after addTask re-fetches)
+  // Gated by initialFetchDone so it never fires before the first fetch resolves
+  useEffect(() => {
+    if (!initialFetchDone.current || loading) return;
+    const serverIds = new Set(tasks.map((t) => t.id));
+    setCompletedIds((prev) => {
+      const cleaned = new Set([...prev].filter((id) => serverIds.has(id)));
+      return cleaned.size === prev.size ? prev : cleaned;
+    });
+  }, [tasks, loading]);
 
   // Handlers
   const handleToggleComplete = (id) => {
@@ -353,14 +394,31 @@ export default function TaskGrid() {
     });
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
+    const wasCompleted = completedIds.has(id);
+
+    // Optimistically hide the task immediately for instant UI feedback
     setDeletedIds((prev) => new Set([...prev, id]));
-    // Also clear completed state if present
     setCompletedIds((prev) => {
       const next = new Set(prev);
       next.delete(id);
       return next;
     });
+
+    // Then delete from server (list re-fetches automatically inside deleteTask)
+    const ok = await deleteTask(id);
+    if (!ok) {
+      // Rollback optimistic removal if server call failed
+      setDeletedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      // Also restore completed state if it was set before deletion
+      if (wasCompleted) {
+        setCompletedIds((prev) => new Set([...prev, id]));
+      }
+    }
   };
 
   // Derived list: filter deleted → search → sort
@@ -435,9 +493,7 @@ export default function TaskGrid() {
             </svg>
           </div>
           <div>
-            <h2 id="task-grid-heading" className="text-base font-semibold text-white">
-              Task Grid
-            </h2>
+            <h2 id="task-grid-heading" className="text-base font-semibold text-white whitespace-nowrap">TaskGrid</h2>
             <p className="text-xs text-slate-500">
               {activeTasks.length > 0
                 ? `${activeTasks.length} task${activeTasks.length !== 1 ? "s" : ""} · ${completedCount} completed`

@@ -22,9 +22,7 @@ export default function Header() {
             </svg>
           </div>
           <div>
-            <h1 className="text-lg font-semibold tracking-tight text-white">
-              TaskGrid
-            </h1>
+            <h1 className="text-lg font-semibold tracking-tight text-white whitespace-nowrap">TaskGrid</h1>
             <p className="text-xs text-slate-500">Task management dashboard</p>
           </div>
         </div>

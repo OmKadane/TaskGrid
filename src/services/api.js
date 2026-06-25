@@ -15,4 +15,6 @@ export const addTask = ({ title, description }) =>
 
 export const listTasks = () => api.get("/tools/list-tasks");
 
+export const deleteTask = (id) => api.delete(`/tools/delete-task/${id}`);
+
 export default api;
