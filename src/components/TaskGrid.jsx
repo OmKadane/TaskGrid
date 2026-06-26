@@ -86,8 +86,8 @@ function SkeletonGrid() {
 // ── Empty State ───────────────────────────────────────────────────────────────
 function EmptyState({ isFiltered }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="relative mb-6 flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="relative mb-8 flex h-36 w-36 items-center justify-center">
         <div className="absolute h-24 w-24 rounded-full bg-indigo-500/5 ring-1 ring-indigo-500/10" />
         <div className="absolute h-36 w-36 rounded-full bg-indigo-500/5 ring-1 ring-indigo-500/10" />
         <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-raised ring-1 ring-surface-border">
@@ -182,11 +182,10 @@ function ErrorState({ message, onRetry }) {
 function TaskCard({ task, completed, onToggleComplete, onDelete }) {
   return (
     <article
-      className={`group relative flex flex-col rounded-xl border p-5 shadow-md transition-all duration-200 ${
-        completed
+      className={`group relative flex flex-col rounded-xl border p-5 shadow-md transition-all duration-200 ${completed
           ? "border-emerald-500/20 bg-surface-raised opacity-60"
           : "border-surface-border bg-surface-raised hover:border-indigo-500/30 hover:shadow-indigo-500/5 hover:shadow-xl"
-      }`}
+        }`}
       aria-label={`Task: ${task.title}${completed ? " (completed)" : ""}`}
     >
       {/* Action buttons — top-right, visible on hover */}
@@ -197,11 +196,10 @@ function TaskCard({ task, completed, onToggleComplete, onDelete }) {
           onClick={() => onToggleComplete(task.id)}
           aria-label={completed ? "Mark as pending" : "Mark as completed"}
           title={completed ? "Mark as pending" : "Mark as completed"}
-          className={`flex h-6 w-6 items-center justify-center rounded-full border transition-all ${
-            completed
+          className={`flex h-6 w-6 items-center justify-center rounded-full border transition-all ${completed
               ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
               : "border-surface-border bg-surface text-slate-500 hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:text-emerald-400"
-          }`}
+            }`}
         >
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
@@ -225,9 +223,8 @@ function TaskCard({ task, completed, onToggleComplete, onDelete }) {
       {/* Top row: title + id badge */}
       <div className="mb-3 flex items-start gap-3 pr-16">
         <h3
-          className={`line-clamp-2 text-sm font-semibold leading-snug transition-colors ${
-            completed ? "text-slate-400 line-through decoration-slate-500" : "text-slate-100 group-hover:text-white"
-          }`}
+          className={`line-clamp-2 text-sm font-semibold leading-snug transition-colors ${completed ? "text-slate-400 line-through decoration-slate-500" : "text-slate-100 group-hover:text-white"
+            }`}
         >
           {task.title}
         </h3>
